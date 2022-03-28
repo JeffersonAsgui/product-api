@@ -1,7 +1,0 @@
-server.port: 8080
-db:
-  host: localhost
-  port: 3306
-  schema: api_product_db
-  username: user_api_product
-  password: pass_api_product
