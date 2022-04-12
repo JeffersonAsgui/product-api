@@ -8,8 +8,22 @@
 
 #Gradle temporary files
 target/
+!.mvn/wrapper/maven-wrapper.jar
+log/
+logs/
 
 #IntelliJ files
-**/*.iml
-**/.idea
-**/.gradle
+*.iml
+.idea
+*.ipr
+*.iws
+
+#STS
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.gitignore
+
