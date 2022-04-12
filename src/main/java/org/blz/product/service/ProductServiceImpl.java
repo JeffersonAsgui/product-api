@@ -7,7 +7,10 @@ import org.blz.product.exception.ObjectNotFoundException;
 import org.blz.product.model.Product;
 import org.blz.product.repository.ProductRepository;
 import org.blz.product.util.mapper.ProductMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +23,8 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductMapper productMapper = ProductMapper.INSTANCE;
 
+    private static final Logger logger = LoggerFactory.getLogger(ProductServiceImpl.class);
+
     @Autowired
     public ProductServiceImpl(ProductRepository productRepository) {
         this.productRepository = productRepository;
@@ -27,23 +32,21 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public boolean isMarketable(Integer quantity) {
-        if (quantity > 0) {
-            return true;
-        } else return false;
+        return quantity > 0;
     }
 
     @Override
     public int calcInventoryQuantity(List<WarehouseDTO> warehouseDTOList) {
-        return (int) warehouseDTOList.stream()
+        return warehouseDTOList.stream()
                 .mapToInt(WarehouseDTO::getQuantity)
-                .reduce((a, b) -> a + b).getAsInt();
+                .reduce(Integer::sum).getAsInt();
     }
 
     @Override
     @Transactional
     public ProductDTO create(ProductDTO productRequest) {
-        if (!productRepository.findBySku(productRequest.getSku()).isEmpty())
-             new DataIntegratyViolationException("sku already exists in database!");
+        if (productRepository.findBySku(productRequest.getSku()).isPresent())
+            new DataIntegratyViolationException("sku already exists in database!");
 
         var product = productMapper.toProduct(productRequest);
         return productMapper.toProductDTO(productRepository.save(setProductId(product)));
@@ -59,6 +62,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Cacheable(cacheNames = "Product")
     public ProductDTO findBySku(Long sku) {
         var productDTO = productMapper.toProductDTO(verifyIfExists(sku));
         productDTO.getInventory().setQuantity(calcInventoryQuantity(productDTO.getInventory().getWarehouses()));
@@ -74,6 +78,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private Product verifyIfExists(Long sku) {
+        logger.info("m=verifyIfExists in productRepository sku={}", sku);
         return productRepository.findBySku(sku)
                 .stream()
                 .findFirst()

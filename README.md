@@ -26,4 +26,12 @@ CREATE DATABASE api_product_db;
 CREATE USER 'user_api_product'@'%' IDENTIFIED BY 'pass_api_product';
 GRANT ALL PRIVILEGES ON api_product_db.* TO 'user_api_product'@'%';
 ```
+
+### Create a redis local instance
+- Start redis container and access it's CLI
+
+```shell
+docker run -it --name redis -p 6379:6379 redis:5.0.3
+```
+
 - Alternative you can edit [application-local.yml](src/main/resources/application-local.yml) **host** to point to the dev database
