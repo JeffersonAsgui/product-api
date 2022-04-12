@@ -1,0 +1,15 @@
+# Change extension of this file to .gitignore
+*.class
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+#Gradle temporary files
+target/
+
+#IntelliJ files
+**/*.iml
+**/.idea
+**/.gradle
